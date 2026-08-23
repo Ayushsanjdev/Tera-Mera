@@ -1,21 +1,25 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import { useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const supabase = createClient();
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next") ?? "/";
 
   const handleGoogleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      },
     });
   };
 
   return (
     <div className="grain relative flex min-h-screen flex-col items-center justify-center bg-[var(--bg)] px-6">
       <div className="relative z-10 w-full max-w-sm text-center">
-        {/* signature knot mark */}
         <svg
           width="40"
           height="24"
@@ -76,30 +80,6 @@ export default function LoginPage() {
           By continuing, you agree to split bills fairly and settle up on time.
         </p>
       </div>
-      <footer className="absolute bottom-6 left-0 right-0 text-center text-xs text-[var(--text-muted)]">
-        Crafted by{" "}
-        <a
-          href="https://ayushsanj.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:text-[var(--text)]"
-        >
-          Ayush Sanj
-        </a>
-        {" · "}
-        <a href="mailto:ayushsanjpro@gmail.com" className="hover:text-[var(--text)]">
-          Email
-        </a>
-        {" · "}
-        <a
-          href="https://github.com/Ayushsanjdev"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:text-[var(--text)]"
-        >
-          GitHub
-        </a>
-      </footer>
     </div>
   );
 }

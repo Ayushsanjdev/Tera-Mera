@@ -4,6 +4,7 @@ import Link from "next/link";
 import AddExpenseForm from "./AddExpenseForm";
 import SettleUpButton from "./SettleUpButton";
 import { calculateBalances, simplifyDebts } from "@/lib/balances";
+import InviteLink from "./InviteLink";
 
 function timeAgo(date: string) {
   const diff = Date.now() - new Date(date).getTime();
@@ -68,8 +69,23 @@ export default async function GroupPage({
     .eq("group_id", id)
     .order("created_at", { ascending: false });
 
-  const balances = calculateBalances(expenses ?? [], settlements ?? []);
+  const balances = calculateBalances(
+    expenses ?? [],
+    settlements ?? [],
+    memberIds,
+  );
   const debts = simplifyDebts(balances);
+
+  const participantIds = new Set<string>();
+  expenses?.forEach((e) => {
+    participantIds.add(e.paid_by);
+    e.expense_shares.forEach((s: any) => participantIds.add(s.user_id));
+  });
+
+  const memberList = memberIds.map((id) => ({
+    id,
+    name: nameMap[id] ?? "Unknown",
+  }));
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
@@ -84,6 +100,9 @@ export default async function GroupPage({
         <h1 className="font-display text-2xl font-medium text-[var(--text)]">
           {group?.name}
         </h1>
+        <div className="mt-3">
+          <InviteLink inviteCode={group?.invite_code} />
+        </div>
 
         <div className="mt-6 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
           <h2 className="mb-3 text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
@@ -136,7 +155,7 @@ export default async function GroupPage({
           </div>
         )}
 
-        {debts.length === 0 && expenses && expenses.length > 0 && (
+        {debts.length === 0 && participantIds.size > 1 && (
           <div className="mt-4 rounded-lg border border-dashed border-[var(--border)] p-4 text-center">
             <p className="text-sm text-[var(--text)]">All settled up 🎉</p>
           </div>
@@ -145,7 +164,7 @@ export default async function GroupPage({
         <div className="mt-6">
           <AddExpenseForm
             groupId={id}
-            memberIds={memberIds}
+            members={memberList}
             currentUserId={user.id}
           />
         </div>

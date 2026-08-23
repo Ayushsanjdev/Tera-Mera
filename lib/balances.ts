@@ -13,8 +13,14 @@ type Settlement = {
 export function calculateBalances(
   expenses: Expense[],
   settlements: Settlement[] = [],
+  memberIds: string[] = [],
 ) {
   const balances: Record<string, number> = {};
+
+  // seed every current member at zero so they show up even with no activity yet
+  memberIds.forEach((id) => {
+    balances[id] = 0;
+  });
 
   for (const expense of expenses) {
     balances[expense.paid_by] =
@@ -25,7 +31,6 @@ export function calculateBalances(
     }
   }
 
-  // a settlement means from_user paid to_user, so from_user's balance goes up (less owed), to_user's goes down (less owed to them)
   for (const s of settlements) {
     balances[s.from_user_id] =
       (balances[s.from_user_id] || 0) + Number(s.amount);
