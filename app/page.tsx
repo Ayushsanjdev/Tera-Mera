@@ -31,7 +31,7 @@ export default async function Home() {
 
       <h2 className="mb-2 mt-6 font-medium">Your groups</h2>
       <div className="space-y-2">
-        {memberships?.map((m: any) => (
+        {memberships?.map((m) => (
           <Link
             key={m.groups.id}
             href={`/groups/${m.groups.id}`}
